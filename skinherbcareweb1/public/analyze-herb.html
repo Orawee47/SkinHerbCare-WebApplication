@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    (function () {
+      const token = localStorage.getItem('token') || localStorage.getItem('userToken');
+      const userRaw = localStorage.getItem('user');
+      if (!token || !userRaw) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userToken');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        window.location.replace('/login.html');
+      }
+    })();
+  </script>
+  <title>ค้นหาข้อมูลจากรูปสมุนไพร - SkinHerbCare</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ======= พื้นฐานและธีมหลัก ======= */
+    @import url("https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap");
+
+    :root {
+      --bg-gradient-start: #e0f2f1;
+      --bg-gradient-end: #dcfce7;
+      --card-bg: linear-gradient(to bottom, rgba(245, 255, 250, 0.8), rgba(240, 253, 245, 0.8));
+      --blur-strength: 15px;
+      --border-color: rgba(16, 185, 129, 0.08);
+      --primary-text: #064e3b;
+      --secondary-text: #1f2937;
+    }
+
+    body {
+      font-family: "Sarabun", sans-serif;
+      background-image: linear-gradient(160deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      color: var(--primary-text);
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+
+    /* ======= ใบไม้ตกแต่งพื้นหลัง ======= */
+    body::before {
+      content: "🌿";
+      position: fixed;
+      bottom: -50px;
+      left: -50px;
+      font-size: 250px;
+      color: rgba(255, 255, 255, 0.5);
+      transform: rotate(-30deg);
+      z-index: -1;
+    }
+    body::after {
+      content: "🌿";
+      position: fixed;
+      top: -80px;
+      right: -80px;
+      font-size: 300px;
+      color: rgba(255, 255, 255, 0.4);
+      transform: rotate(20deg);
+      z-index: -1;
+    }
+
+    /* ======= Navbar แบบโปร่งใส glass ======= */
+    .top-nav {
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      width: 100%;
+      border-bottom: 1px solid var(--border-color);
+      z-index: 100;
+    }
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary-text);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .auth-links {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .auth-links a {
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--primary-text);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    .login-btn:hover {
+      background-color: rgba(255, 255, 255, 0.5);
+    }
+    .profile-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+}
+@media (max-width: 640px) {
+      .top-nav {
+        padding: 10px 12px;
+      }
+      .logo {
+        font-size: 1rem;
+      }
+      .auth-links a {
+        padding: 5px 8px;
+        font-size: 0.7rem;
+      }
+    }
+
+    /* ======= กล่องแสดงภาพ ======= */
+    .preview-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 200px;
+      border: 2px dashed #d1d5db;
+      border-radius: 0.75rem;
+      background-color: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+      color: #6b7280;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+    }
+    .preview-box:hover {
+      border-color: #16a34a;
+      background-color: rgba(255, 255, 255, 0.6);
+    }
+    .preview-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 0.5rem;
+    }
+  
+        .admin-btn {
+          background-color: #FFC107;
+          color: #111C44;
+          border-radius: 8px;
+          padding: 6px 12px;
+          font-weight: 600;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .admin-btn:hover {
+          background-color: #FFD54F;
+          transform: translateY(-1px);
+        }
+        .logout-btn {
+          background: none;
+          border: none;
+          cursor: pointer;
+          text-decoration: none;
+          color: var(--primary-text);
+          font-weight: 600;
+          padding: 6px 12px;
+          border-radius: 8px;
+          font-size: 0.95rem;
+        }
+        .logout-btn:hover {
+          background: rgba(255,255,255,0.6);
+        }
+
+        .profile-icon img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+</style>
+</head>
+
+<body class="antialiased">
+  <nav class="top-nav">
+  <div class="nav-container">
+    <a href="/" class="logo">&#x1F33F; SkinHerbCare</a>
+    
+    <!-- Guest Navigation -->
+    <div class="auth-links" id="guest-nav">
+      <a href="/">Home</a>
+      <a href="/login.html">Log In</a>
+      <a href="/register.html">Sign Up</a>
+      <button id="profile-btn-guest" class="profile-icon" aria-label="Profile">
+        <img id="profile-img-guest" src="" alt="Profile" style="display:none;">
+        <span id="profile-fallback-guest">&#x1F464;</span>
+      </button>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="auth-links" id="admin-nav" style="display: none;">
+      <a href="/">Home</a>
+      <a href="/admin-dashboard.html" class="admin-btn">&#x2699;&#xFE0F; &#x0E08;&#x0E31;&#x0E14;&#x0E01;&#x0E32;&#x0E23;&#x0E23;&#x0E30;&#x0E1A;&#x0E1A;</a>
+      <button onclick="logout()" class="logout-btn">Log Out</button>
+      <button id="profile-btn-admin" class="profile-icon" aria-label="Profile">
+        <img id="profile-img-admin" src="" alt="Profile" style="display:none;">
+        <span id="profile-fallback-admin">&#x1F464;</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+  <main class="flex flex-col items-center min-h-[calc(100vh-4rem)] px-3 sm:px-4 py-6 sm:py-12">
+    <div class="max-w-2xl w-full bg-white/70 backdrop-blur-lg rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-8 border border-gray-200">
+      
+      <a href="/" class="inline-flex items-center text-gray-600 hover:text-green-700 transition mb-4 sm:mb-6 text-sm sm:text-base">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        กลับไปหน้าหลัก
+      </a>
+
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 text-center mb-2">ค้นหาข้อมูลจากรูปสมุนไพร</h1>
+      <p class="text-sm sm:text-base text-gray-600 text-center mb-4 sm:mb-6">อัปโหลดภาพสมุนไพร หรือถ่ายภาพจากกล้องเพื่อให้ AI ช่วยวิเคราะห์ข้อมูลและสรรพคุณ</p>
+
+      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6 justify-center">
+        <button id="upload-btn" class="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition text-sm sm:text-base">
+          📁 เลือกรูปจากเครื่อง
+        </button>
+        <button id="camera-btn" class="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 transition text-sm sm:text-base">
+          📷 เปิดกล้อง
+        </button>
+      </div>
+
+      <div id="camera-mode" class="hidden mb-4 sm:mb-6">
+        <video id="video-stream" width="100%" height="auto" style="border-radius: 12px; background: #000; max-height: 400px;" autoplay playsinline></video>
+        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4 justify-center">
+          <button id="capture-btn" class="px-4 sm:px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition text-sm sm:text-base">
+            ✓ ถ่ายภาพ
+          </button>
+          <button id="close-camera-btn" class="px-4 sm:px-6 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm sm:text-base">
+            ✕ ปิดกล้อง
+          </button>
+        </div>
+      </div>
+
+      <div id="capture-mode" class="hidden mb-4 sm:mb-6">
+        <div id="image-preview-box" class="preview-box"><span>ภาพจะแสดงที่นี่</span></div>
+        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
+          <button id="use-capture-btn" class="px-4 sm:px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition text-sm sm:text-base">
+            ✓ ใช้รูปนี้
+          </button>
+          <button id="retake-btn" class="px-4 sm:px-6 py-2 bg-yellow-600 text-white font-bold rounded-lg hover:bg-yellow-700 transition text-sm sm:text-base">
+            🔄 ถ่ายใหม่
+          </button>
+        </div>
+      </div>
+
+      <div id="upload-mode" class="mb-4 sm:mb-6">
+        <div id="image-preview-box-upload" class="preview-box"><span>ภาพตัวอย่างจะแสดงที่นี่</span></div>
+      </div>
+
+      <input
+        id="herb-image-upload"
+        type="file"
+        accept="image/*"
+        class="hidden block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 mb-4"
+      />
+
+      <button
+        id="analyze-herb-btn"
+        class="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-green-600 text-white font-bold text-base sm:text-lg rounded-lg shadow-md hover:bg-green-700 transition active:scale-95"
+      >
+        ค้นหา
+      </button>
+
+      <div id="results-container" class="mt-6 bg-gray-50/80 backdrop-blur-sm p-3 sm:p-4 rounded-lg min-h-[100px] text-sm sm:text-base">
+        <p>ผลลัพธ์จะแสดงที่นี่...</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/analyze-herb.js?v=20260208"></script>
+
+  <script>
+    let currentImageBlob = null;
+    window.currentImageBlob = null;
+    let videoStreamObj = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const imageInput = document.getElementById('herb-image-upload');
+      const uploadBtn = document.getElementById('upload-btn');
+      const cameraBtn = document.getElementById('camera-btn');
+      const videoElement = document.getElementById('video-stream');
+      const captureBtn = document.getElementById('capture-btn');
+      const closeCameraBtn = document.getElementById('close-camera-btn');
+      const retakeBtn = document.getElementById('retake-btn');
+      const useCaptureBtn = document.getElementById('use-capture-btn');
+      const cameraModeDiv = document.getElementById('camera-mode');
+      const captureModeDiv = document.getElementById('capture-mode');
+      const uploadModeDiv = document.getElementById('upload-mode');
+      const previewBoxUpload = document.getElementById('image-preview-box-upload');
+      const previewBox = document.getElementById('image-preview-box');
+      const analyzeBtn = document.getElementById('analyze-herb-btn');
+
+      uploadBtn.addEventListener('click', async () => {
+        await stopCamera();
+        uploadModeDiv.classList.remove('hidden');
+        cameraModeDiv.classList.add('hidden');
+        captureModeDiv.classList.add('hidden');
+        imageInput.click();
+      });
+
+      cameraBtn.addEventListener('click', async () => {
+        uploadModeDiv.classList.add('hidden');
+        captureModeDiv.classList.add('hidden');
+        cameraModeDiv.classList.remove('hidden');
+        await startCamera(videoElement);
+      });
+
+      async function startCamera(videoElement) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false
+          });
+          videoStreamObj = stream;
+          videoElement.srcObject = stream;
+          videoElement.play();
+        } catch (err) {
+          console.error('กล้องไม่พร้อม:', err);
+          alert('ไม่สามารถเข้าถึงกล้องได้ กรุณาตรวจสอบการอนุญาต');
+          cameraModeDiv.classList.add('hidden');
+        }
+      }
+
+      async function stopCamera() {
+        if (videoStreamObj) {
+          videoStreamObj.getTracks().forEach(track => track.stop());
+          videoStreamObj = null;
+        }
+      }
+
+      captureBtn.addEventListener('click', () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(videoElement, 0, 0);
+        
+        canvas.toBlob((blob) => {
+          currentImageBlob = blob;
+          window.currentImageBlob = blob;
+          previewBox.innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="Captured">`;
+          cameraModeDiv.classList.add('hidden');
+          captureModeDiv.classList.remove('hidden');
+        });
+      });
+
+      retakeBtn.addEventListener('click', async () => {
+        captureModeDiv.classList.add('hidden');
+        cameraModeDiv.classList.remove('hidden');
+        await startCamera(videoElement);
+      });
+
+      useCaptureBtn.addEventListener('click', () => {
+        stopCamera();
+        captureModeDiv.classList.add('hidden');
+        uploadModeDiv.classList.add('hidden');
+      });
+
+      closeCameraBtn.addEventListener('click', async () => {
+        await stopCamera();
+        cameraModeDiv.classList.add('hidden');
+        uploadModeDiv.classList.remove('hidden');
+      });
+
+      imageInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          currentImageBlob = file;
+          window.currentImageBlob = file;
+          const reader = new FileReader();
+          reader.onload = (e) => previewBoxUpload.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+          reader.readAsDataURL(file);
+        }
+      });
+
+      // analyze handled by /js/analyze-herb.js
+
+      uploadModeDiv.classList.remove('hidden');
+    });
+  </script>
+  
+  <script>
+    function checkLoginStatus() {
+      const userRole = localStorage.getItem('userRole');
+      const guestNav = document.getElementById('guest-nav');
+      const adminNav = document.getElementById('admin-nav');
+
+      if (userRole === 'admin') {
+        if (guestNav) guestNav.style.display = 'none';
+        if (adminNav) adminNav.style.display = 'flex';
+      } else {
+        if (guestNav) guestNav.style.display = 'flex';
+        if (adminNav) adminNav.style.display = 'none';
+      }
+    }
+
+    
+    function logout() {
+      const msg = "\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E2D\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E23\u0E30\u0E1A\u0E1A\u0E2B\u0E23\u0E37\u0E2D\u0E44\u0E21\u0E48?";
+      if (confirm(msg)) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        location.reload();
+      }
+    }
+
+}
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkLoginStatus();
+    });
+  </script>
+<script src="/js/profile-drawer.js?v=20260208"></script>
+<script src="/js/auth.js?v=20260211r15"></script>
+</body>
+</html>

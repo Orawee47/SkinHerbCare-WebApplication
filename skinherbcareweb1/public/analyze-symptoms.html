@@ -1,0 +1,618 @@
+﻿<!DOCTYPE html>
+<html class="light" lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>วิเคราะห์จากอาการ - SkinHerbCare</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'] },
+                    colors: { primary: "#059669" }
+                }
+            }
+        }
+    </script>
+    <script>
+        if (!localStorage.getItem('token') || !localStorage.getItem('user')) {
+            alert('กรุณาเข้าสู่ระบบก่อนใช้งานฟังก์ชันวิเคราะห์โรค');
+            window.location.href = 'login.html';
+        }
+    </script>
+    
+    <style>
+
+        :root {
+          --bg-gradient-start: #e0f2f1;
+          --bg-gradient-end: #dcfce7;
+          --card-bg: rgba(255, 255, 255, 0.55);
+          --blur-strength: 15px;
+          --border-color: rgba(255, 255, 255, 0.25);
+          --primary-text: #064e3b;
+          --secondary-text: #1f2937;
+        }
+        /* CSS เดิม */
+        body, div, p, span, button, input { transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+        body { background-image: linear-gradient(160deg, #e0f2f1 0%, #dcfce7 100%); }
+        .dark body { background-image: linear-gradient(160deg, #0f172a 0%, #064e3b 100%); }
+        .glass-panel { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .glass-light { background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 255, 255, 0.6); }
+        .dark .glass-light { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(6, 78, 59, 0.2); border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .msg-animate { animation: slideUp 0.3s ease-out forwards; }
+        .typing-dot { animation: typing 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        .leaf-bg { position: fixed; z-index: -1; pointer-events: none; color: rgba(255, 255, 255, 0.5); transition: opacity 0.3s; }
+        .dark .leaf-bg { opacity: 0.1; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+    
+        /* NAVBAR (from index) */
+        .top-nav {
+          position: sticky;
+          top: 0;
+          width: 100%;
+          padding: 12px 20px;
+          backdrop-filter: blur(10px);
+          background: rgba(255,255,255,0.35);
+          border-bottom: 1px solid var(--border-color);
+          z-index: 100;
+        }
+
+        .nav-container {
+          max-width: 1200px;
+          margin: auto;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 15px;
+          flex-wrap: wrap;
+        }
+
+        .logo {
+          font-size: 1.4rem;
+          font-weight: 700;
+          text-decoration: none;
+          color: var(--primary-text);
+          white-space: nowrap;
+        }
+
+        .auth-links {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .auth-links a {
+          text-decoration: none;
+          padding: 6px 12px;
+          border-radius: 8px;
+          font-weight: 600;
+          color: var(--primary-text);
+          font-size: 0.95rem;
+        }
+
+        .auth-links a:hover {
+          background: rgba(255,255,255,0.6);
+        }
+
+        .profile-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+}
+.profile-icon img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+@media (max-width: 640px) {
+          .top-nav {
+            padding: 10px 12px;
+          }
+
+          .logo {
+            font-size: 1.1rem;
+          }
+
+          .auth-links {
+            justify-content: center;
+            width: 100%;
+            gap: 6px;
+          }
+
+          .auth-links a {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+          }
+
+          .profile-icon {
+            width: 32px;
+            height: 32px;
+          }
+        }
+
+        .admin-btn {
+          background-color: #FFC107;
+          color: #111C44;
+          border-radius: 8px;
+          padding: 6px 12px;
+          font-weight: 600;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .admin-btn:hover {
+          background-color: #FFD54F;
+          transform: translateY(-1px);
+        }
+        .logout-btn {
+          background: none;
+          border: none;
+          cursor: pointer;
+          text-decoration: none;
+          color: var(--primary-text);
+          font-weight: 600;
+          padding: 6px 12px;
+          border-radius: 8px;
+          font-size: 0.95rem;
+        }
+        .logout-btn:hover {
+          background: rgba(255,255,255,0.6);
+        }
+</style>
+</head>
+
+<body class="flex flex-col h-screen overflow-hidden text-gray-800 dark:text-gray-100">
+
+    <div class="leaf-bg text-[250px] bottom-[-50px] left-[-50px] rotate-[-30deg]">🌿</div>
+    <div class="leaf-bg text-[300px] top-[-80px] right-[-80px] rotate-[20deg]">🌿</div>
+
+    <nav class="top-nav">
+  <div class="nav-container">
+    <a href="/" class="logo">&#x1F33F; SkinHerbCare</a>
+    
+    <!-- Guest Navigation -->
+    <div class="auth-links" id="guest-nav">
+      <a href="/">Home</a>
+      <a href="/login.html">Log In</a>
+      <a href="/register.html">Sign Up</a>
+      <button id="profile-btn-guest" class="profile-icon" aria-label="Profile">
+        <img id="profile-img-guest" src="" alt="Profile" style="display:none;">
+        <span id="profile-fallback-guest">&#x1F464;</span>
+      </button>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="auth-links" id="admin-nav" style="display: none;">
+      <a href="/">Home</a>
+      <a href="/admin-dashboard.html" class="admin-btn">&#x2699;&#xFE0F; &#x0E08;&#x0E31;&#x0E14;&#x0E01;&#x0E32;&#x0E23;&#x0E23;&#x0E30;&#x0E1A;&#x0E1A;</a>
+      <button onclick="logout()" class="logout-btn">Log Out</button>
+      <button id="profile-btn-admin" class="profile-icon" aria-label="Profile">
+        <img id="profile-img-admin" src="" alt="Profile" style="display:none;">
+        <span id="profile-fallback-admin">&#x1F464;</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+    <main class="flex-1 flex flex-col items-center justify-center p-2 md:p-4 overflow-hidden relative z-10">
+        <div class="w-full max-w-4xl h-full md:h-[85vh] flex flex-col glass-panel glass-light rounded-2xl shadow-2xl overflow-hidden transition-all duration-300">
+            
+            <div class="px-6 py-4 border-b border-green-100 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/40 dark:bg-black/20">
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <div class="w-10 h-10 bg-green-600 dark:bg-green-700 rounded-full flex items-center justify-center shadow-lg shadow-green-600/20">
+                            <span class="material-icons-round text-white">smart_toy</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-green-900 dark:text-white">AI Assistant</h2>
+                        <p class="text-xs text-green-700 dark:text-gray-400">ผู้ช่วยวิเคราะห์อาการ (Online)</p>
+                    </div>
+                </div>
+                <a href="/" class="text-sm text-gray-500 dark:text-gray-400 hover:text-green-700 dark:hover:text-green-400 flex items-center gap-1 transition">
+                    <span class="material-icons-round text-base">arrow_back</span> กลับไปหน้าหลัก
+                </a>
+            </div>
+
+            <div id="chat-history" class="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar space-y-4 bg-white/30 dark:bg-black/20">
+                <div class="flex items-start gap-3 max-w-[85%] msg-animate">
+                    <div class="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center shrink-0 mt-1 shadow-md">
+                        <span class="material-icons-round text-white text-sm">spa</span>
+                    </div>
+                    <div class="bg-white/90 dark:bg-white/10 p-4 rounded-2xl rounded-tl-none shadow-sm text-green-900 dark:text-gray-100 border border-white dark:border-white/5">
+                        <p class="leading-relaxed">สวัสดีครับ! 👋 ระบบกำลังเชื่อมต่อกับฐานข้อมูล...<br>
+                        บอกอาการของคุณมาได้เลยครับ</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-white/60 dark:bg-black/40 backdrop-blur-md border-t border-white/50 dark:border-white/5 shrink-0">
+                <form onsubmit="handleChatSubmit(event)" class="relative flex items-center gap-2">
+                    <input type="text" id="user-input" 
+                        class="w-full bg-white dark:bg-black/30 border-0 ring-1 ring-green-100 dark:ring-white/10 rounded-full pl-5 pr-12 py-3 focus:ring-2 focus:ring-green-500 transition shadow-inner placeholder-gray-400 dark:placeholder-gray-500 text-gray-700 dark:text-white"
+                        placeholder="พิมพ์อาการของคุณที่นี่..." autocomplete="off">
+                    <button type="submit" class="absolute right-2 bg-green-600 hover:bg-green-700 text-white p-2 rounded-full shadow-lg transition transform active:scale-95 flex items-center justify-center">
+                        <span class="material-icons-round text-xl">send</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // =========================================================
+        // ⚙️ ตั้งค่าการเชื่อมต่อ (สำคัญมาก แก้ตรงนี้)
+        // =========================================================
+        
+        // 1. ถ้า Backend อยู่คนละที่ ให้ใส่ URL เต็มๆ เช่น 'https://my-backend-api.onrender.com'
+        // 2. ถ้า Backend อยู่ที่เดียวกัน (Host เดียวกัน) ให้ใส่เป็นค่าว่าง '' หรือ '/'
+        const API_BASE_URL = window.location.hostname.includes('netlify.app')
+          ? 'https://skinherbcareweb1.onrender.com'
+          : window.location.origin;
+
+        // 3. ตรวจสอบชื่อ Route ใน Backend ของคุณว่าใช้ชื่ออะไร?
+        //    (ถ้าใน Python/Node คุณใช้ @app.route('/predict') ก็ต้องแก้ตรงนี้เป็น '/predict')
+        const API_ROUTE = '/api/analysis/analyze'; 
+        // =========================================================
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.innerText = 'dark_mode';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                icon.innerText = 'light_mode';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.getElementById('theme-icon').innerText = 'light_mode';
+        }
+
+        const chatHistory = document.getElementById('chat-history');
+        const userInput = document.getElementById('user-input');
+
+        const diseaseKeywords = {
+            acne: ['สิว', 'ลดการอักเสบ', 'หน้ามัน'],
+            eczema: ['ผื่น', 'คัน', 'ผิวหนังอักเสบ'],
+            psoriasis: ['สะเก็ดเงิน', 'ผิวแห้ง', 'ลอก'],
+            ringworm: ['กลาก', 'เกลื้อน', 'เชื้อรา'],
+            dermatitis: ['ผื่น', 'คัน', 'ผิวหนังอักเสบ'],
+            urticaria: ['ลมพิษ', 'ผื่น', 'คัน'],
+            impetigo: ['พุพอง', 'เชื้อแบคทีเรีย', 'ผิวหนังอักเสบ']
+        };
+
+        let knownHerbs = [];
+
+        async function loadHerbList() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/herbs`);
+                if (!res.ok) return;
+                const json = await res.json();
+                const herbs = json.herbs || json.data || [];
+                if (Array.isArray(herbs)) {
+                    knownHerbs = herbs;
+                }
+            } catch (e) {
+                // ignore fetch errors, fallback to backend-related herbs
+            }
+        }
+
+        function findHerbsForDisease(diseaseName) {
+            if (!diseaseName || !Array.isArray(knownHerbs) || knownHerbs.length === 0) return [];
+            const key = String(diseaseName).toLowerCase().trim();
+            const keywords = diseaseKeywords[key] || [];
+            if (keywords.length === 0) return [];
+
+            return knownHerbs.filter((herb) => {
+                const props = Array.isArray(herb.properties) ? herb.properties.join(' ') : (herb.properties || '');
+                const textToSearch = `${herb.name || ''} ${props}`.toLowerCase();
+                return keywords.some(kw => textToSearch.includes(kw));
+            }).map((herb) => ({
+                name: herb.name,
+                properties: Array.isArray(herb.properties) ? herb.properties.join(', ') : herb.properties,
+                image: herb.image || ''
+            }));
+        }
+
+        loadHerbList();
+
+        async function handleChatSubmit(e) {
+            e.preventDefault();
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user');
+            userInput.value = '';
+            
+            // ส่งข้อมูลไป Backend
+            await sendMessageToBackend(text);
+        }
+
+        
+
+async function sendMessageToBackend(message) {
+    showTypingIndicator();
+
+    try {
+        const token = localStorage.getItem('token') || localStorage.getItem('userToken');
+        const fullUrl = `${API_BASE_URL}${API_ROUTE}`;
+        console.log("Connecting to:", fullUrl);
+
+        const response = await fetch(fullUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
+            },
+            body: JSON.stringify({ symptoms: message })
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        const isJson = contentType.includes("application/json");
+        const data = isJson ? await response.json() : null;
+        const rawText = !isJson ? await response.text() : "";
+
+        removeTypingIndicator();
+
+        if (!response.ok) {
+            const msg = (data && (data.message || data.error)) || rawText || `API Error ${response.status}`;
+            appendMessage(`Error: ${msg}`, 'bot');
+            return;
+        }
+
+        const results = normalizeResults(data);
+        if (results.length === 0) {
+            const msg = (data && data.message) ? data.message : "No matching data found in the database.";
+            appendMessage(msg, 'bot');
+            return;
+        }
+
+        appendMessage(renderResults(results, data && data.message), 'bot');
+    } catch (error) {
+        removeTypingIndicator();
+        console.error('Fetch Error:', error);
+        appendMessage("Unable to reach server. Please try again.", 'bot');
+    }
+}
+
+function normalizeResults(data) {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.data)) return data.data;
+    if (Array.isArray(data.results)) return data.results;
+    if (data.prediction) {
+        return [{
+            disease: data.prediction,
+            confidence: data.confidence ?? 0,
+            recommendation: data.recommendation || data.treatment || data.message || ""
+        }];
+    }
+    return [];
+}
+
+function renderResults(results, headerMessage) {
+    const escapeHtml = (text) => String(text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+    const itemsHtml = results.map((item) => {
+        const name = item.disease || item.name || 'Unknown disease';
+        const confidence = (typeof item.confidence === 'number') ? `(ความมั่นใจ: ${item.confidence}%)` : '';
+        const symptoms = item.main_symptoms || item.symptoms || '-';
+        const treatment = item.recommendation || item.treatment || item.herbs || '-';
+        const treatmentText = String(treatment || '-');
+        const showReadMore = treatmentText.length > 180;
+
+        const relatedHerbs = (item.relatedHerbs && item.relatedHerbs.length > 0)
+            ? item.relatedHerbs
+            : findHerbsForDisease(name);
+
+        let herbsHtml = '';
+        if (relatedHerbs && relatedHerbs.length > 0) {
+            const herbCards = relatedHerbs.map(herb => {
+                const properties = Array.isArray(herb.properties) ? herb.properties.join(', ') : herb.properties;
+                return `
+                    <div class=\"flex items-start gap-3 bg-green-50/80 p-3 rounded-lg border border-green-200 mt-2\">
+                        <div class=\"w-12 h-12 bg-green-200 rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center\">
+                             ${herb.image
+                                 ? `<img src=\"${herb.image}\" class=\"w-full h-full object-cover\">`
+                                 : `<span class=\"material-icons-round text-green-700\">spa</span>`
+                             }
+                        </div>
+                        <div>
+                            <b class=\"text-green-800 text-sm\">${herb.name}</b>
+                            <p class=\"text-xs text-gray-600 mt-1 line-clamp-2\">${properties || 'ไม่มีข้อมูลสรรพคุณ'}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            herbsHtml = `
+                <div class=\"mt-4 pt-3 border-t border-green-100\">
+                    <p class=\"text-sm font-bold text-green-700 mb-2 flex items-center gap-1\">
+                        <span class=\"material-icons-round text-sm\">local_pharmacy</span> 
+                        สมุนไพรที่ใช้รักษาได้:
+                    </p>
+                    <div class=\"grid grid-cols-1 md:grid-cols-2 gap-2\">
+                        ${herbCards}
+                    </div>
+                </div>
+            `;
+        }
+
+        return `
+            <li class=\"mb-4 p-5 bg-white rounded-2xl shadow-sm border border-green-100 hover:shadow-md transition-shadow\">
+                <div class=\"flex justify-between items-start\">
+                    <h3 class=\"text-xl font-bold text-gray-800\">${name}</h3>
+                    <span class=\"text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full\">${confidence}</span>
+                </div>
+                
+                <div class=\"mt-3 space-y-2 text-sm text-gray-700\">
+                    <p><b>อาการ:</b> ${symptoms}</p>
+                    <div class=\"treatment-container\">
+                        <p class=\"line-clamp-3 treatment-content\"><b>วิธีรักษาเบื้องต้น:</b> ${escapeHtml(treatmentText)}</p>
+                        ${showReadMore ? `<button type=\"button\" onclick=\"toggleReadMore(this)\" class=\"text-blue-500 font-bold mt-2\">อ่านเพิ่มเติม...</button>` : ''}
+                    </div>
+                </div>
+
+                ${herbsHtml}
+            </li>
+        `;
+    }).join('');
+
+    const title = headerMessage ? `<div class=\"mb-4 text-center font-medium text-green-800 bg-green-50 py-2 rounded-lg\">${headerMessage}</div>` : '';
+    return `${title}<ul class=\"list-none space-y-4\">${itemsHtml}</ul>`;
+}
+
+function toggleReadMore(btn) {
+    const textElement = btn.previousElementSibling;
+    if (!textElement) return;
+    if (textElement.classList.contains('line-clamp-3')) {
+        textElement.classList.remove('line-clamp-3');
+        btn.innerText = 'แสดงน้อยลง';
+    } else {
+        textElement.classList.add('line-clamp-3');
+        btn.innerText = 'อ่านเพิ่มเติม...';
+    }
+}
+
+
+function appendMessage(text, sender) {
+            const isBot = sender === 'bot';
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            let html = '';
+            if (isBot) {
+                html = `
+                <div class="flex items-start gap-3 max-w-[85%] msg-animate">
+                    <div class="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center shrink-0 mt-1 shadow-md">
+                        <span class="material-icons-round text-white text-sm">spa</span>
+                    </div>
+                    <div class="bg-white/90 dark:bg-white/10 p-4 rounded-2xl rounded-tl-none shadow-sm text-green-900 dark:text-gray-100 border border-white dark:border-white/5">
+                        <p class="leading-relaxed text-sm md:text-base">${text}</p>
+                        <span class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 block opacity-70">${time}</span>
+                    </div>
+                </div>`;
+            } else {
+                html = `
+                <div class="flex items-start gap-3 flex-row-reverse max-w-[85%] ml-auto msg-animate">
+                    <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 border border-white dark:border-white/10 flex items-center justify-center shrink-0 overflow-hidden">
+                         <span class="material-icons-round text-gray-500 dark:text-gray-300">person</span>
+                    </div>
+                    <div class="bg-green-600/90 p-4 rounded-2xl rounded-tr-none shadow-md text-white backdrop-blur-sm">
+                        <p class="leading-relaxed text-sm md:text-base">${text}</p>
+                        <span class="text-[10px] text-green-100 mt-1 block text-right opacity-80">${time}</span>
+                    </div>
+                </div>`;
+            }
+            chatHistory.insertAdjacentHTML('beforeend', html);
+            scrollToBottom();
+        }
+
+        function showTypingIndicator() {
+            const html = `
+                <div id="typing-indicator" class="flex items-start gap-3 max-w-[85%] msg-animate">
+                    <div class="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center shrink-0 mt-1">
+                        <span class="material-icons-round text-white text-sm">spa</span>
+                    </div>
+                    <div class="bg-white/50 dark:bg-white/5 p-3 rounded-2xl rounded-tl-none border border-white/30 dark:border-white/5">
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 bg-green-600 dark:bg-white rounded-full typing-dot"></div>
+                            <div class="w-2 h-2 bg-green-600 dark:bg-white rounded-full typing-dot"></div>
+                            <div class="w-2 h-2 bg-green-600 dark:bg-white rounded-full typing-dot"></div>
+                        </div>
+                    </div>
+                </div>`;
+            chatHistory.insertAdjacentHTML('beforeend', html);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.remove();
+        }
+
+        function scrollToBottom() {
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+    </script>
+
+  <script>
+    function checkLoginStatus() {
+      const userRole = localStorage.getItem('userRole');
+      const guestNav = document.getElementById('guest-nav');
+      const adminNav = document.getElementById('admin-nav');
+
+      if (userRole === 'admin') {
+        if (guestNav) guestNav.style.display = 'none';
+        if (adminNav) adminNav.style.display = 'flex';
+      } else {
+        if (guestNav) guestNav.style.display = 'flex';
+        if (adminNav) adminNav.style.display = 'none';
+      }
+    }
+
+    
+    function logout() {
+      const msg = "\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E2D\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E23\u0E30\u0E1A\u0E1A\u0E2B\u0E23\u0E37\u0E2D\u0E44\u0E21\u0E48?";
+      if (confirm(msg)) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        location.reload();
+      }
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkLoginStatus();
+    });
+  </script>
+
+
+<script src="/js/profile-drawer.js"></script>
+<script src="/js/auth.js?v=20260211r15"></script>
+</body>
+</html>
